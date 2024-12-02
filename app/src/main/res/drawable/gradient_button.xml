@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 버튼이 눌렸을 때 -->
+    <item android:state_pressed="true">
+        <shape>
+            <gradient
+                android:startColor="#4B84E7"
+                android:endColor="#7A3ECD"
+                android:angle="45"/>
+            <corners android:radius="8dp"/>  <!-- 둥근 모서리 -->
+        </shape>
+    </item>
+
+    <!-- 기본 상태 -->
+    <item>
+        <shape>
+            <gradient
+                android:startColor="#5B94F7"
+                android:endColor="#8A4EDD"
+                android:angle="45"/>
+            <corners android:radius="8dp"/>
+        </shape>
+    </item>
+</selector>
