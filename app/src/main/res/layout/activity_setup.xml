@@ -19,7 +19,7 @@
         android:layout_marginBottom="24dp"/>
 
     <EditText
-        android:id="@+id/searchLocationEditText"
+        android:id="@+id/searchLocationEdit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Search Your City"
