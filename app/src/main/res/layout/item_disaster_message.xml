@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_app_icon"
+                android:tint="#6750A4" />
+
+            <TextView
+                android:id="@+id/applicationName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="재난문자 받은 날짜(ex. 2024/12/03)"
+                android:textColor="#6750A4" />
+            <TextView
+                android:id="@+id/timeStamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="now(time stamp)" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/messageTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="재난의 구체적인 유형(DST_SM_NM=한파)"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/messageContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ทุกพื้นที่ในอำเภอ ยางปิง ระดับอุณหภูมิต่ำกว่า 0 องศาเซลเซียส กรุณาระวังการเกิดความติดเยียกและฝัดหน่าช่วงภายใน ติดตัวเป็นที่แน่นอน กรุณาห่อเก็บพิกี่ของการน้ำที่ดี หลีกเลี่ยงการติดอุโมงและชานชืด ในสายวิชา. [อำเภอ ยางปิง]"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
