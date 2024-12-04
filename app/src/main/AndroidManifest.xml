@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -27,6 +28,14 @@
             android:name=".DisasterMessageService"
             android:exported="false" />
 
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <!-- message 이벤트 추가 -->
+            </intent-filter>
+        </service>
         <activity
             android:name=".SplashActivity"
             android:exported="true">

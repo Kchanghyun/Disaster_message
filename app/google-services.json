@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "30433503160",
+    "project_id": "send-fcm-3f25e",
+    "storage_bucket": "send-fcm-3f25e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:30433503160:android:bc0726ce90ac39b155514d",
+        "android_client_info": {
+          "package_name": "com.example.disaster_message"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYu7Zz4Kv4blgdF-YFy_wBZzUkUQNZk9k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:30433503160:android:281d1ba6f2cb17c555514d",
+        "android_client_info": {
+          "package_name": "com.gwnu.disaster_message"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYu7Zz4Kv4blgdF-YFy_wBZzUkUQNZk9k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

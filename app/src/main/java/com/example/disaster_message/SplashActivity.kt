@@ -26,7 +26,7 @@ class SplashActivity : AppCompatActivity() {
 
             val nextActivity = if (isFirstRun) {
                 // 최초 실행이면 설정 화면으로
-                SetupActivity::class.java
+                Initial_SetupActivity::class.java
             } else {
                 // 아니면 메인 화면으로
                 MainActivity::class.java

@@ -18,7 +18,6 @@ import com.google.android.gms.maps.SupportMapFragment
 import kotlinx.serialization.json.Json
 import android.Manifest
 import android.location.Geocoder
-import android.widget.ImageButton
 import android.widget.TextView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -28,26 +27,24 @@ import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.serialization.Serializable
 import java.util.Locale
 
-class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
+class Initial_SetupActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var currentAddress: String = "" // 현재 위치 주소 저장용
 
-    private lateinit var languageSpinner: Spinner
-    private lateinit var searchLocationEdit: EditText
-    private lateinit var nextButton: Button
+    private lateinit var I_languageSpinner: Spinner
+    private lateinit var I_searchLocationEdit: EditText
+    private lateinit var I_nextButton: Button
     private lateinit var prefs: SharedPreferences
-    private lateinit var locationText: TextView
-    private lateinit var refreshLocationButton: Button
-    private lateinit var backButton: ImageButton
+    private lateinit var I_locationText: TextView
+    private lateinit var I_refreshLocationButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_setup)
+        setContentView(R.layout.activity_initial_setup)
 
-        locationText = findViewById(R.id.locationText)
-        refreshLocationButton = findViewById(R.id.refreshLocationButton)
-        backButton = findViewById(R.id.backButton)
+        I_locationText = findViewById(R.id.I_locationText)
+        I_refreshLocationButton = findViewById(R.id.I_refreshLocationButton)
 
         // getSharedPreferences는 SharedPreferences 객체를 생성하거나 가져오는 함수
         prefs = getSharedPreferences("user_settings", Context.MODE_PRIVATE)
@@ -60,13 +57,13 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
         // UI 초기화
         initializeUI()
 
-        refreshLocationButton.setOnClickListener {
+        I_refreshLocationButton.setOnClickListener {
             checkLocationPermission()
         }
 
         // 다음 버튼 클릭 처리
-        nextButton.setOnClickListener {
-            val selectedLanguage = languageSpinner.selectedItem.toString()
+        I_nextButton.setOnClickListener {
+            val selectedLanguage = I_languageSpinner.selectedItem.toString()
 
             // User 객체 생성
             val user = User(
@@ -78,10 +75,6 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
             saveUserData(user)
 
             startActivity(Intent(this, MainActivity::class.java))
-            finish()
-        }
-
-        backButton.setOnClickListener {
             finish()
         }
     }
@@ -123,11 +116,11 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
                         address?.firstOrNull()?.let { address ->
                             // 주소를 TextView에 표시
                             val addressText = address.getAddressLine(0) ?: "주소를 찾을 수 없습니다"
-                            locationText.text = addressText
+                            I_locationText.text = addressText
                             currentAddress = addressText
                         }
                     } catch (e: Exception) {
-                        locationText.text = "주소를 찾을 수 없습니다"
+                        I_locationText.text = "주소를 찾을 수 없습니다"
                     }
 
                     // 지도 업데이트
@@ -187,9 +180,9 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
     // 앱의 UI 구성 요소를 초기화하는 함수
     private fun initializeUI() {
         // view를 변수에 할당
-        languageSpinner = findViewById(R.id.languageSpinner)
-        locationText = findViewById(R.id.locationText)
-        nextButton = findViewById(R.id.nextButton)
+        I_languageSpinner = findViewById(R.id.I_languageSpinner)
+        I_locationText = findViewById(R.id.I_locationText)
+        I_nextButton = findViewById(R.id.I_nextButton)
 
         // 스피너 설정
         @Serializable
@@ -204,7 +197,7 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
         // android에서 UI 리스트를 관리하기 위한 기본 어댑터
         val adapter = ArrayAdapter(this,
             android.R.layout.simple_spinner_item, languageKeys)
-        languageSpinner.adapter = adapter
+        I_languageSpinner.adapter = adapter
     }
 
 }
