@@ -33,7 +33,6 @@ class Initial_SetupActivity : AppCompatActivity(), OnMapReadyCallback {
     private var currentAddress: String = "" // 현재 위치 주소 저장용
 
     private lateinit var I_languageSpinner: Spinner
-    private lateinit var I_searchLocationEdit: EditText
     private lateinit var I_nextButton: Button
     private lateinit var prefs: SharedPreferences
     private lateinit var I_locationText: TextView
@@ -51,7 +50,7 @@ class Initial_SetupActivity : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
+            .findFragmentById(R.id.I_map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         // UI 초기화
@@ -67,7 +66,7 @@ class Initial_SetupActivity : AppCompatActivity(), OnMapReadyCallback {
 
             // User 객체 생성
             val user = User(
-                id = User.generateUserId(),
+//                id = User.generateUserId(),
                 userLanguage = selectedLanguage,
                 address = currentAddress
             )

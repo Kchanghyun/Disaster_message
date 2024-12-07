@@ -70,7 +70,7 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
 
             // User 객체 생성
             val user = User(
-                id = User.generateUserId(),
+//                id = User.generateUserId(),
                 userLanguage = selectedLanguage,
                 address = currentAddress
             )
@@ -161,15 +161,17 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
             apply()
         }
     }
+
+    // 사용자가 권한 요청 팝업(ex: 위치 권한 허용/거부 파업)에 대해 허용 또는 거부를 선택한 후 호출되는 콜백 메서드
     override fun onRequestPermissionsResult(
-        requestCode: Int, // 요청 권한
-        permissions: Array<out String>, // 요청 권한의 배열
-        grantResults: IntArray // 사용자가 허용하거나 거부한 결과 배열
+        requestCode: Int, // 요청 권한 - 요청을 보낼 때 사용한 코드
+        permissions: Array<out String>, // 요청 권한의 배열(Manifest.permission.ACCESS_FINE_LOCATION)
+        grantResults: IntArray // 사용자가 허용하거나 거부한 결과 배열(PackageManager.PERMISSION_GRANTED or PackageManager.PERMISSION_DENIED)
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
+        when (requestCode) { // requestCode가 LOCATION_PERMISSION_REQUEST_CODE인 경우 실행
             LOCATION_PERMISSION_REQUEST_CODE -> {
-                if (grantResults.isNotEmpty() &&
+                if (grantResults.isNotEmpty() && // 결과 배열이 비어있지 않고, 배열의 첫 번째 항목이 허용인지 확인
                     grantResults[0] == PackageManager.PERMISSION_GRANTED // 사용자가 권한을 허용하면
                 ) {
                     getCurrentLocation()

@@ -12,7 +12,7 @@ class GPT_API {
     // companion object는 해당 클래스의 정적멤버 역할을 하는 객체 = static 역할
     companion object {
         private val gson = Gson()
-        private const val GPT_API_KEY = "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"
+        private val GPT_API_KEY = System.getenv("GPT_API_KEY")
     }
 
     data class GptResponse(
