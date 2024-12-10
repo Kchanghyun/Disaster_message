@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -9,12 +12,30 @@ android {
     namespace = "com.example.disaster_message"
     compileSdk = 34
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.example.disaster_message"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            val localProperties = Properties()
+            localProperties.load(FileInputStream(localPropertiesFile))
+            val apiKey = localProperties.getProperty("GPT_API_KEY")
+                ?: throw GradleException("GPT_API_KEY is missing in local.properties")
+            val map_api_key = localProperties.getProperty("GOOGLE_MAP_API_KEY")
+
+            buildConfigField("String", "GPT_API_KEY", "\"$apiKey\"")
+            buildConfigField("String", "GOOGLE_MAP_API_KEY", "\"$map_api_key\"")
+        } else {
+            throw GradleException("local.properties file not found!")
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         viewBinding.isEnabled = true
@@ -54,11 +75,11 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.play.services.maps)
     implementation(libs.firebase.messaging.ktx)
+    implementation(libs.androidx.ui.graphics.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-//    implementation ("io.ktor:ktor-server-core:2.3.7")
-//    implementation ("io.ktor:ktor-server-netty:2.3.7")
+
     implementation("io.ktor:ktor-client-android:2.3.7")
     implementation("io.ktor:ktor-client-core:2.3.7")
     implementation("ch.qos.logback:logback-classic:1.2.11")
@@ -76,6 +97,8 @@ dependencies {
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
 }
 
 //apply plugin: "com.google.gms.google-services"

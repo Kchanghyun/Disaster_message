@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"
-        android:background="#E2E6F6D5">
+        android:background="@color/white">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -31,15 +31,17 @@
 <!--                    android:contentDescription="Back"-->
 <!--                    android:src="@drawable/ic_back" />-->
 
-                <EditText
+                <TextView
+                    android:id="@+id/language"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="Search"
+                    android:text="language"
                     android:textColor="@color/black"
+                    android:textSize="20dp"
+                    android:textStyle="bold"
                     android:background="@null"
-                    android:padding="8dp"
-                    android:inputType="text" />
+                    android:padding="8dp" />
 
                 <ImageButton
                     android:id="@+id/settings"
@@ -61,61 +63,15 @@
                 android:textSize="16sp" />
 
             <!-- Notification Items -->
-            <LinearLayout
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <!-- Notification Card -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/white"
-                    android:padding="16dp"
-                    android:layout_marginBottom="8dp">
-
-                    <ImageView
-                        android:layout_width="26dp"
-                        android:layout_height="32dp"
-                        android:layout_marginEnd="8dp"
-                        android:contentDescription="App Icon"
-                        android:src="@drawable/ic_app_icon" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="재난문자 받은 날짜(ex. 2024/12/03)"
-                            android:textColor="@color/black"
-                            android:textStyle="bold"
-                            android:textSize="14sp"
-                            android:layout_marginBottom="4dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="재난의 구체적인 유형(DST_SM_NM=한파)"
-                            android:textColor="@color/black"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="재난문자 내용"
-                            android:textColor="@color/black"
-                            android:textSize="12sp"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-                </LinearLayout>
+                android:layout_height="match_parent"
+                android:background="@drawable/rounded_background"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="30dp" />
 
                 <!-- Add more cards as needed -->
-
-            </LinearLayout>
 
         </LinearLayout>
 

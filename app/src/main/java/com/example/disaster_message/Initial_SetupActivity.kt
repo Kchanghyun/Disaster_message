@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.EditText
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -17,7 +16,11 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import kotlinx.serialization.json.Json
 import android.Manifest
+import android.graphics.Color
 import android.location.Geocoder
+import android.util.Log
+import android.view.View
+import android.widget.AdapterView
 import android.widget.TextView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -37,6 +40,11 @@ class Initial_SetupActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var prefs: SharedPreferences
     private lateinit var I_locationText: TextView
     private lateinit var I_refreshLocationButton: Button
+
+    private lateinit var languagesData: Languages
+
+    @Serializable
+    data class Languages(val languages: Map<String, String>)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,12 +70,16 @@ class Initial_SetupActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // 다음 버튼 클릭 처리
         I_nextButton.setOnClickListener {
-            val selectedLanguage = I_languageSpinner.selectedItem.toString()
+            val selectedKey = I_languageSpinner.selectedItem.toString()
+            Log.d("SharedPreferences_test", "초기 설정 키 값 : $selectedKey")
+            val selectedLanguage = languagesData.languages[selectedKey]
+            Log.d("SharedPreferences_test", "초기 설정 값 : $selectedLanguage")
 
             // User 객체 생성
+            // 여기서 영어로 그냥 들어가버리네
             val user = User(
 //                id = User.generateUserId(),
-                userLanguage = selectedLanguage,
+                userLanguage = selectedLanguage ?: "영어",
                 address = currentAddress
             )
 
@@ -108,6 +120,10 @@ class Initial_SetupActivity : AppCompatActivity(), OnMapReadyCallback {
                 location?.let {
                     // 현재 위치로 카메라 이동
                     val currentLatLng = LatLng(it.latitude, it.longitude)
+                    prefs.edit().apply {
+                        putFloat("user_latitude", it.latitude.toFloat())
+                        putFloat("user_longitude", it.longitude.toFloat())
+                    }
 
                     val geocoder = Geocoder(this, Locale.getDefault())
                     try {
@@ -136,10 +152,6 @@ class Initial_SetupActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // 하나의 SharedPreferences 파일에 데이터를 저장 -> 새로운 값 -> 이전 값에 덮어쓰기
-    // 여러 사용자의 데이터를 따로 저장하는 구조가 아님
-    // 한 기기에서 한 사용자만 사용한다고 가정하면 현재 코드로도 충분함.
-    // -> 앱의 내부 저장소에 생성되는 파일이라서 해당 기기에서만 접근 가능
     /*
     1. 한 기기는 한 사람이 사용
     2. 앱의 설정은 기기별로 따로 관리
@@ -152,6 +164,7 @@ class Initial_SetupActivity : AppCompatActivity(), OnMapReadyCallback {
             putBoolean("is_first_run", false)
             apply()
         }
+        Log.d("SharedPreferences_test", "초기 설정 userLanguage : ${user.userLanguage}" )
     }
     override fun onRequestPermissionsResult(
         requestCode: Int, // 요청 권한
@@ -184,19 +197,34 @@ class Initial_SetupActivity : AppCompatActivity(), OnMapReadyCallback {
         I_nextButton = findViewById(R.id.I_nextButton)
 
         // 스피너 설정
-        @Serializable
-        data class Languages(val languages: Map<String, String>)
 
         // assets 파일의 languages.json 파일 열어서 키 가져오기
         val json = assets.open("languages.json").bufferedReader().use { it.readText() }
-        val languagesData = Json.decodeFromString<Languages>(json)
+        languagesData = Json.decodeFromString<Languages>(json)
 
         val languageKeys = languagesData.languages.keys.toList()
 
         // android에서 UI 리스트를 관리하기 위한 기본 어댑터
         val adapter = ArrayAdapter(this,
             android.R.layout.simple_spinner_item, languageKeys)
+        adapter.setDropDownViewResource(R.layout.custom_spinner_dropdown_item)
         I_languageSpinner.adapter = adapter
+
+        I_languageSpinner.post {
+            val textView = I_languageSpinner.selectedView as? TextView
+            textView?.setTextColor(Color.BLACK)
+        }
+
+        I_languageSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                // 선택된 아이템의 텍스트뷰 색상 변경
+                (view as? TextView)?.setTextColor(Color.BLACK) // 원하는 색상으로 변경
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // 비워두기
+            }
+        }
     }
 
 }

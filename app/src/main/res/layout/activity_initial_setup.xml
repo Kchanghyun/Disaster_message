@@ -3,6 +3,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
+    android:background="@color/white"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <TextView
@@ -10,12 +11,17 @@
         android:layout_height="wrap_content"
         android:text="Select Language"
         android:textSize="20sp"
+        android:textColor="@color/black"
         android:layout_marginBottom="16dp"/>
 
     <Spinner
         android:id="@+id/I_languageSpinner"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
+        android:popupBackground="@color/white"
+        android:background="@drawable/spinner_background"
+        android:dropDownWidth="match_parent"
+        android:dropDownVerticalOffset="35dp"
         android:layout_marginBottom="24dp"/>
 
     <TextView
@@ -24,6 +30,7 @@
         android:layout_height="wrap_content"
         android:hint="Search Your City"
         android:textSize="16sp"
+        android:textColor="@color/black"
         android:padding="8dp"
         android:layout_marginBottom="8dp"/>
 
@@ -32,7 +39,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:text="Find Location" />
+        android:text="Find Location"
+        android:background="@drawable/gradient_button"/>
 
     <fragment
         android:id="@+id/I_map"

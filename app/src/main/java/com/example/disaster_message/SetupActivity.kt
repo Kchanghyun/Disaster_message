@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.EditText
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -17,7 +16,12 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import kotlinx.serialization.json.Json
 import android.Manifest
+import android.annotation.SuppressLint
+import android.graphics.Color
 import android.location.Geocoder
+import android.util.Log
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ImageButton
 import android.widget.TextView
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -34,12 +38,16 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
     private var currentAddress: String = "" // 현재 위치 주소 저장용
 
     private lateinit var languageSpinner: Spinner
-    private lateinit var searchLocationEdit: EditText
     private lateinit var nextButton: Button
     private lateinit var prefs: SharedPreferences
     private lateinit var locationText: TextView
     private lateinit var refreshLocationButton: Button
     private lateinit var backButton: ImageButton
+
+    private lateinit var languagesData: Languages
+
+    @Serializable
+    data class Languages(val languages: Map<String, String>)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +56,7 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
         locationText = findViewById(R.id.locationText)
         refreshLocationButton = findViewById(R.id.refreshLocationButton)
         backButton = findViewById(R.id.backButton)
+        languageSpinner = findViewById(R.id.languageSpinner)
 
         // getSharedPreferences는 SharedPreferences 객체를 생성하거나 가져오는 함수
         prefs = getSharedPreferences("user_settings", Context.MODE_PRIVATE)
@@ -66,12 +75,18 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // 다음 버튼 클릭 처리
         nextButton.setOnClickListener {
-            val selectedLanguage = languageSpinner.selectedItem.toString()
+            val selectedKey = languageSpinner.selectedItem.toString()
+            Log.d("SharedPreferences_test", "초기 설정 키 값 : $selectedKey")
+            val selectedLanguage = languagesData.languages[selectedKey]
+            Log.d("SharedPreferences_test", "초기 설정 값 : $selectedLanguage")
+            Log.d("SharedPreferences_test", "next key : $selectedKey")
+            Log.d("SharedPreferences_test", "next key : $selectedLanguage")
 
+
+            // currentAddress 저장하는 코드가 안보임
             // User 객체 생성
             val user = User(
-//                id = User.generateUserId(),
-                userLanguage = selectedLanguage,
+                userLanguage = selectedLanguage ?: "영어",
                 address = currentAddress
             )
 
@@ -116,6 +131,15 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
                 location?.let {
                     // 현재 위치로 카메라 이동
                     val currentLatLng = LatLng(it.latitude, it.longitude)
+                    prefs.edit().apply {
+                        putFloat("user_latitude", it.latitude.toFloat())
+                        putFloat("user_longitude", it.longitude.toFloat())
+                        apply()
+                        Log.d("SharedPreferences_test", it.latitude.toString())
+                        Log.d("SharedPreferences_test", it.longitude.toString())
+                    }
+                    Log.d("SharedPreferences_test", "저장된 위도 : ${prefs.getFloat("user_latitude", 0.0F).toDouble().toString()}")
+                    Log.d("SharedPreferences_test", "저장된 경도 : ${prefs.getFloat("user_longitude", 0.0F).toDouble().toString()}")
 
                     val geocoder = Geocoder(this, Locale.getDefault())
                     try {
@@ -144,10 +168,6 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // 하나의 SharedPreferences 파일에 데이터를 저장 -> 새로운 값 -> 이전 값에 덮어쓰기
-    // 여러 사용자의 데이터를 따로 저장하는 구조가 아님
-    // 한 기기에서 한 사용자만 사용한다고 가정하면 현재 코드로도 충분함.
-    // -> 앱의 내부 저장소에 생성되는 파일이라서 해당 기기에서만 접근 가능
     /*
     1. 한 기기는 한 사람이 사용
     2. 앱의 설정은 기기별로 따로 관리
@@ -160,6 +180,8 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
             putBoolean("is_first_run", false)
             apply()
         }
+        Log.d("SharedPreferences_test", user.userLanguage)
+        Log.d("SharedPreferences_test", user.address)
     }
 
     // 사용자가 권한 요청 팝업(ex: 위치 권한 허용/거부 파업)에 대해 허용 또는 거부를 선택한 후 호출되는 콜백 메서드
@@ -186,6 +208,10 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
     }
 
+    fun Languages.findByValue(value: String?): String? {
+        return this.languages.entries.firstOrNull { it.value == value }?.key
+    }
+
     // 앱의 UI 구성 요소를 초기화하는 함수
     private fun initializeUI() {
         // view를 변수에 할당
@@ -193,25 +219,43 @@ class SetupActivity : AppCompatActivity(), OnMapReadyCallback {
         locationText = findViewById(R.id.locationText)
         nextButton = findViewById(R.id.nextButton)
 
-        // 스피너 설정
-        @Serializable
-        data class Languages(val languages: Map<String, String>)
-
         // assets 파일의 languages.json 파일 열어서 키 가져오기
         val json = assets.open("languages.json").bufferedReader().use { it.readText() }
-        val languagesData = Json.decodeFromString<Languages>(json)
+        languagesData = Json.decodeFromString<Languages>(json)
 
         val languageKeys = languagesData.languages.keys.toList()
 
         // android에서 UI 리스트를 관리하기 위한 기본 어댑터
         val adapter = ArrayAdapter(this,
             android.R.layout.simple_spinner_item, languageKeys)
+        adapter.setDropDownViewResource(R.layout.custom_spinner_dropdown_item)
         languageSpinner.adapter = adapter
+
+        languageSpinner.post {
+            val textView = languageSpinner.selectedView as? TextView
+            textView?.setTextColor(Color.BLACK)
+        }
+
+        languageSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                // 선택된 아이템의 텍스트뷰 색상 변경
+                (view as? TextView)?.setTextColor(Color.BLACK) // 원하는 색상으로 변경
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // 비워두기
+            }
+        }
+
+        val savedLanguage = prefs.getString("user_language", null)
+        Log.d("SharedPreferences_test", "user_language : $savedLanguage")
+        val savedLanguageKey = languagesData.findByValue(savedLanguage)
+        savedLanguageKey?.let {
+            val position = languageKeys.indexOf(it) // 언어 리스트에서 저장된 언어의 위치 찾기
+            if (position != -1) {
+                languageSpinner.setSelection(position) // Spinner 선택값 설정
+            }
+        }
     }
 
 }
-
-/*
-여기서 이제 next를 누르면
-위치 정보 확인 후 이상 없으면 그 정보를 User 객체의 address, language로 설정
- */

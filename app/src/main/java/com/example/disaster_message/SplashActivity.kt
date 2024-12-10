@@ -1,6 +1,5 @@
 package com.example.disaster_message
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -22,6 +21,7 @@ class SplashActivity : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
 
         prefs = getSharedPreferences("user_settings", Context.MODE_PRIVATE)
+
 
         lifecycleScope.launch {
             delay(2000)
