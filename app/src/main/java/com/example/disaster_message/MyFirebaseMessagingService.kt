@@ -26,8 +26,6 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -54,68 +52,23 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val body = message.data["body"] ?: "no body"
         val location = message.data["location"] ?: "no location"
 
-//        user_language = prefs.getString("user_language", "영어") ?: "영어"
-//
-//        val locationList: List<String> = listOf(*location.split(",").toTypedArray())
-//        val locations: Map<String, Pair<Double, Double>> = getCoordinatesForMultipleAddresses(locationList, google_map_api_key)
-//
-//        val userLat = prefs.getFloat("user_latitude", 37.821769F).toDouble()
-//        Log.d("SharedPreferences_test", "userLat : $userLat")
-//        val userLon = prefs.getFloat("user_longitude", 128.155389F).toDouble()
-//        Log.d("SharedPreferences_test", "userLon : $userLon")
-//
-//        Log.d("SharedPreferences_test", "FCM에서의 user_language : $user_language")
-//        Log.d("SharedPreferences_test", "메시지 받음")
-//        scope.launch {
-//            try {
-//                Log.d("SharedPreferences_test", "launch에서의 user_language : $user_language")
-//                response_list = gpt_API.callGPTAPI(user_language, title, body)
-//                Log.d("SharedPreferences_test", "response_list : $response_list")
-//                Log.d("SharedPreferences_test", "gpt_api 호출함")
-//                Log.d("SharedPreferences_test", "response : ${response_list.title}")
-//                Log.d("SharedPreferences_test", "response : ${response_list.body}")
-//                saveMessageToLog(response_list.title, response_list.body)
-//                sendNotification(response_list.title, response_list.body)
-//                Log.d("SharedPreferences_test", "알림 보냄")
-//            } catch (e: Exception) {
-//                Log.e("SharedPreferences_test", "Error during translation", e)
-//                saveMessageToLog(title, body)
-//                sendNotification(title, body) // 번역 실패 시 원문 알림
-//            }
-//        }
-
         val locationList: List<String> = listOf(*location.split(",").toTypedArray())
 
-        Log.d("location_test", "FCM으로 받은 위치 : $location")
 
         val locations: Map<String, Pair<Double, Double>> = getCoordinatesForMultipleAddresses(locationList, google_map_api_key)
-        Log.d("location_test", ", 단위로 나눈 문자열 리스트 : $locations")
         val userLat = prefs.getFloat("user_latitude", 37.82177F).toDouble()
-        Log.d("location_test", "prefs.Lat : $userLat")
         val userLon = prefs.getFloat("user_longitude", 128.1554F).toDouble()
-        Log.d("location_test", "prefs.Lon : $userLon")
         for ((address, coordinates) in locations) {
             val locationType = getLocationType(address)
-            Log.d("location_test", "문자열 리스트 순회(주소) : $address")
-            Log.d("location_test", "수신 지역 범위 : $locationType")
             val latitude = coordinates.first
             val longitude = coordinates.second
-            Log.d("location_test", "수신범위 내? : ${isUserWithinDisasterArea(userLat, userLon, latitude, longitude, locationType)}")
             if(isUserWithinDisasterArea(userLat, userLon, latitude, longitude, locationType)) {
                 user_language = prefs.getString("user_language", "영어") ?: "영어"
-                Log.d("SharedPreferences_test", "FCM에서의 user_language : $user_language")
-                Log.d("SharedPreferences_test", "메시지 받음")
                 scope.launch {
                     try {
-                        Log.d("SharedPreferences_test", "launch에서의 user_language : $user_language")
                         response_list = gpt_API.callGPTAPI(user_language, title, body)
-                        Log.d("SharedPreferences_test", "response_list : $response_list")
-                        Log.d("SharedPreferences_test", "gpt_api 호출함")
-                        Log.d("SharedPreferences_test", "response : ${response_list.title}")
-                        Log.d("SharedPreferences_test", "response : ${response_list.body}")
                         saveMessageToLog(response_list.title, response_list.body)
                         sendNotification(response_list.title, response_list.body)
-                        Log.d("SharedPreferences_test", "알림 보냄")
                     } catch (e: Exception) {
                         Log.e("SharedPreferences_test", "Error during translation", e)
                         saveMessageToLog(title, body)
@@ -125,7 +78,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 break
             }
         }
-        // ex : locations - "강원도 원주시" : (35, 127)
     }
 
     private fun saveMessageToLog(title: String, body: String) {
@@ -145,7 +97,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             messageList.addAll(existingMessages)
 
             messageList.add(Profile(title, body, currentTime))
-            Log.d("SharedPreferences_test", "메시지 저장 성공")
             // 리스트를 JSON으로 변환하여 저장
             val updateJson = Gson().toJson(messageList)
             prefs.edit().putString("messages", updateJson).apply()
@@ -158,6 +109,81 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         // 알림 생성
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
+        createNotificationChannel()
+
+        // 전체화면 인텐트 설정
+        val Intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("title", title)
+            putExtra("body", body)
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, Intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val notificationId = UUID.randomUUID().toString().hashCode()
+
+        // Wake Lock 획득 (화면이 꺼져있을 때도 알림)
+        // 시스템의 전원 관리 서비스에 접근하기 위한 PowerManager 객체 저장
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val wakeLock = powerManager.newWakeLock(
+            // 화면, 키보드, 백라이트 모두 ON
+            PowerManager.FULL_WAKE_LOCK or
+                    // WakeLock 획득 시 기기를 즉시 깨움
+                    PowerManager.ACQUIRE_CAUSES_WAKEUP or
+                    // WakeLock이 해제된 후에도 화면을 켜진 상태로 유지
+                    PowerManager.ON_AFTER_RELEASE,
+            "FCM:WakeLock"
+        ).apply {
+            // 15초(15000밀리초)동안 WakeLock 유지
+            acquire(15000)
+        }
+
+        scope.launch { // 비동기 실행
+            startVibration() // 진동 실행
+        }
+
+        try {
+            notificationManager.notify(
+                notificationId,
+                createHeadUpNotification(title, body, pendingIntent).build()
+            )
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                val notification = createPermanentNotification(title, body, pendingIntent)
+                    .setOnlyAlertOnce(true)
+                    .setVibrate(longArrayOf(0))
+                    .build()
+
+                notification.flags = notification.flags or Notification.FLAG_ONLY_ALERT_ONCE
+                notificationManager.notify(notificationId, notification)
+            }, 20000)
+        } finally {
+            if (wakeLock.isHeld) {
+                wakeLock.release()
+            }
+        }
+    }
+
+    private fun startVibration() {
+        try {
+            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val vibratePattern = longArrayOf(0, 1000, 500, 1000)
+                val amplitudes = intArrayOf(0, 255, 0, 255)
+                vibrator.vibrate(VibrationEffect.createWaveform(vibratePattern, amplitudes, -1))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(longArrayOf(0, 1000, 500, 1000), -1)
+            }
+        } catch (e: Exception) {
+            Log.e("SharedPreferences_test", "진동 실행 실패", e)
+        }
+    }
+
+    private fun createNotificationChannel() {
         // 안드로이드 8.0 이상에서는 채널이 필요
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -176,34 +202,22 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 setBypassDnd(true) // 방해금지 모드 무시
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC // 잠금화면에서 전체 내용 표시
             }
+
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+    }
 
-//        // 전체화면 인텐트 설정
-        val Intent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("title", title)
-            putExtra("body", body)
-        }
-
-        val PendingIntent = PendingIntent.getActivity(
-            this, 0, Intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        val uuidString = UUID.randomUUID().toString()
-        val notificationId = uuidString.hashCode()
-
-        // 알람 빌더
-        val builder = NotificationCompat.Builder(this, "emergency")
-            .setSmallIcon(R.drawable.ic_warning) // 알림 아이콘
-            .setContentTitle(title)
-            .setContentText(body)
+    private fun createHeadUpNotification(title: String, body: String, pendingIntent: PendingIntent) : NotificationCompat.Builder {
+        return NotificationCompat.Builder(this, "emergency")
+            .setSmallIcon(R.drawable.ic_warning) // 알림에 나올 아이콘
+            .setContentTitle(title) // 알림 타이틀
+            .setContentText(body) // 알림 내용
             .setPriority(NotificationCompat.PRIORITY_MAX) // 최대 우선순위
             .setCategory(NotificationCompat.CATEGORY_CALL) // 알람 카테고리 ( 우선순위 : CALL > ALARM )
-            .setFullScreenIntent(PendingIntent, true) // 전체화면 인텐트
-            .setAutoCancel(false) // 탭하면 알림이 사라지는지 여부
-//            .setTimeoutAfter(20000) // 20초 후 자동으로 사라짐
+            // 1. 헤드업 알림을 표시하는 트리거, 2. 알림을 탭했을 때의 동작도 정의(ContentIntent와 비슷한 역할)
+            .setFullScreenIntent(pendingIntent, true) // 전체화면 인텐트
+            .setAutoCancel(true) // 탭하면 알림이 사라지는지 여부
             .setOngoing(false) // 사용자가 스와이프로 제거할 수 없게 설정
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setVibrate(longArrayOf(0, 1000, 500, 1000)) // 진동 패턴
@@ -211,52 +225,32 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // 잠금화면에서 전체 내용 표시
             .setStyle(NotificationCompat.BigTextStyle()
                 .bigText(body)) // 긴 텍스트 표시
-
-
-
-        // Wake Lock 획득 (화면이 꺼져있을 때도 알림)
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        val wakeLock = powerManager.newWakeLock(
-            PowerManager.FULL_WAKE_LOCK or
-                    PowerManager.ACQUIRE_CAUSES_WAKEUP or
-                    PowerManager.ON_AFTER_RELEASE,
-            "FCM:WakeLock"
-        ).apply {
-            acquire(10000)
-        }
-
-//        wakeLock.acquire(10000) // 10초 동안 화면 켜기
-        notificationManager.notify(
-            notificationId,
-            builder.build()
-        )
-
-        Handler(Looper.getMainLooper()).postDelayed({
-            notificationManager.cancel(notificationId)
-        }, 20000)
-
-        // 진동 실행
-        startVibration()
-
-        // WakeLock 해제
-        wakeLock.release()
+            .setOnlyAlertOnce(true) // 동일한 알림 id에 대해서 처음 한 번만 알림 효과를 발생
     }
 
-    private fun startVibration() {
-        try {
-            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val vibratePattern = longArrayOf(0, 1000, 500, 1000)
-                val amplitudes = intArrayOf(0, 255, 0, 255)
-                vibrator.vibrate(VibrationEffect.createWaveform(vibratePattern, amplitudes, -1))
-            } else {
-                @Suppress("DEPRECATION")
-                vibrator.vibrate(longArrayOf(0, 1000, 500, 1000), -1)
-            }
-        } catch (e: Exception) {
-            Log.e("SharedPreferences_test", "진동 실행 실패", e)
-        }
+    private fun createPermanentNotification(title: String, body: String, pendingIntent: PendingIntent): NotificationCompat.Builder {
+        return NotificationCompat.Builder(this, "emergency")
+            .setSmallIcon(R.drawable.ic_warning) // 알림 아이콘
+            .setContentTitle(title)
+            .setContentText(body)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT) // 최대 우선순위
+//            .setCategory(NotificationCompat.CATEGORY_CALL) // 알람 카테고리 ( 우선순위 : CALL > ALARM )
+            .setContentIntent(pendingIntent) // (헤드업이 아닌) 일반 알림을 탭했을 때의 동작
+            .setFullScreenIntent(null, false)
+            .setAutoCancel(true) // 탭하면 알림이 사라지는지 여부
+            .setOngoing(false) // 사용자가 스와이프로 제거할 수 없게 설정
+            .setVibrate(null) // 진동 비활성화
+            .setSound(null) // 소리 비활성화
+            .setDefaults(0)
+            .setFullScreenIntent(null, false)
+            .setAllowSystemGeneratedContextualActions(false)
+            .setLights(Color.RED, 3000, 3000) // LED 설정
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // 잠금화면에서 전체 내용 표시
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText(body)) // 긴 텍스트 표시
+            .setOnlyAlertOnce(true) // 동일한 알림 ID에 대해 소리, 진동 등의 알림 효과를 처음 한 번만 발생시키도록 하는 메서드
     }
+
     override fun onCreate() {
         super.onCreate()
         //지정된 토픽을 구독한다.
